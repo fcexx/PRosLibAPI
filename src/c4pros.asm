@@ -334,8 +334,8 @@ c4pros_fs_parent_dir:
     ret
 
 ; dir=[bp+4]
-global fs_mkdir
-fs_mkdir:
+global c4pros_fs_mkdir
+c4pros_fs_mkdir:
     push bp
     mov bp, sp
     ptr_to_si
@@ -349,8 +349,8 @@ fs_mkdir:
     ret
 
 ; dir=[bp+4]
-global fs_rmdir
-fs_rmdir:
+global c4pros_fs_rmdir
+c4pros_fs_rmdir:
     push bp
     mov bp, sp
     ptr_to_si
@@ -364,8 +364,8 @@ fs_rmdir:
     ret
 
 ; AH=0x0D, SI=name. Out: CF set if directory. Возвращаем 1=dir, 0=no
-global fs_is_dir
-fs_is_dir:
+global c4pros_fs_is_dir
+c4pros_fs_is_dir:
     push bp
     mov bp, sp
     ptr_to_si
@@ -379,8 +379,8 @@ fs_is_dir:
     ret
 
 ; AH=0x0E
-global fs_save_dir
-fs_save_dir:
+global c4pros_fs_save_dir
+c4pros_fs_save_dir:
     push bp
     mov bp, sp
     mov ah, 0x0E
@@ -389,8 +389,8 @@ fs_save_dir:
     ret
 
 ; AH=0x0F
-global fs_restore_dir
-fs_restore_dir:
+global c4pros_fs_restore_dir
+c4pros_fs_restore_dir:
     push bp
     mov bp, sp
     mov ah, 0x0F
@@ -399,8 +399,8 @@ fs_restore_dir:
     ret
 
 ; name=[bp+4], offset=[bp+6], segment=[bp+8]
-global fs_load_huge_file
-fs_load_huge_file:
+global c4pros_fs_load_huge_file
+c4pros_fs_load_huge_file:
     push bp
     mov bp, sp
     ptr_to_si
