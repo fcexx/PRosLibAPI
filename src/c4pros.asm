@@ -398,6 +398,7 @@ c4pros_fs_restore_dir:
     pop bp
     ret
 
+
 ; name=[bp+4], offset=[bp+6], segment=[bp+8]
 global c4pros_fs_load_huge_file
 c4pros_fs_load_huge_file:
