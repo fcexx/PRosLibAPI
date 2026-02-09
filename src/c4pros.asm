@@ -462,3 +462,119 @@ c4pros_fs_load_huge_file:
     and ax, 1
     pop bp
     ret
+
+; ==================================================================
+; INT 15h — мышь (Pointing Device BIOS), как в рабочем NASM-драйвере
+; ==================================================================
+
+; Callback: как в рабочем NASM — [bp+8]=delta Y (byte), [bp+10]=delta X (byte), [bp+12]=buttons.
+; Накапливаем позицию в mouse_dx, mouse_dy (C читает как абсолютные координаты).
+MouseCallback_int15:
+    push bp
+    mov bp, sp
+    push ax
+    push bx
+    push cx
+    push dx
+    push ds
+    push cs
+    pop ds
+    mov bl, [bp+12]
+    and bl, 3
+    mov [mouse_buttons], bl
+    mov cx, [mouse_dx]
+    mov al, [bp+10]
+    cbw
+    add cx, ax
+    cmp cx, 0
+    jge .x_ok1
+    xor cx, cx
+.x_ok1:
+    cmp cx, 639
+    jle .x_ok2
+    mov cx, 639
+.x_ok2:
+    mov [mouse_dx], cx
+    mov cx, [mouse_dy]
+    mov al, [bp+8]
+    cbw
+    sub cx, ax
+    cmp cx, 0
+    jge .y_ok1
+    xor cx, cx
+.y_ok1:
+    cmp cx, 479
+    jle .y_ok2
+    mov cx, 479
+.y_ok2:
+    mov [mouse_dy], cx
+    mov byte [mouse_event_ready], 1
+    pop ds
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    pop bp
+    retf
+
+; Возврат: 0 = мышь есть, -1 = нет (в AX для C).
+global c4pros_mouse_int15_init
+c4pros_mouse_int15_init:
+    int 0x11
+    test ax, 0x04
+    jz .no_mouse
+    mov ax, 0xC205
+    mov bh, 0x03
+    int 0x15
+    jc .no_mouse
+    mov ax, 0xC203
+    mov bh, 0x03
+    int 0x15
+    jc .no_mouse
+    xor ax, ax
+    ret
+.no_mouse:
+    mov ax, -1
+    ret
+
+global c4pros_mouse_int15_enable
+c4pros_mouse_int15_enable:
+    push es
+    mov ax, 0xC200
+    xor bh, bh
+    int 0x15
+    mov ax, 0xC207
+    xor bx, bx
+    int 0x15
+    push cs
+    pop es
+    mov bx, MouseCallback_int15
+    mov ax, 0xC207
+    int 0x15
+    mov ax, 0xC200
+    mov bh, 0x01
+    int 0x15
+    pop es
+    ret
+
+global c4pros_mouse_int15_disable
+c4pros_mouse_int15_disable:
+    mov ax, 0xC200
+    xor bh, bh
+    int 0x15
+    mov ax, 0xC207
+    xor bx, bx
+    int 0x15
+    ret
+
+; Глобалы для C: c4pros_mouse_poll читает и сбрасывает mouse_event_ready
+global mouse_event_ready
+global mouse_dx
+global mouse_dy
+global mouse_buttons
+
+section .bss
+mouse_event_ready resb 1
+mouse_dx         resw 1
+mouse_dy         resw 1
+mouse_buttons    resb 1

@@ -27,7 +27,11 @@ extern void c4pros_get_string(char *buf, uint16_t max);
 
 extern void c4pros_set_pixel(uint8_t color, uint16_t x, uint16_t y);   /* INT 10h AH=0x0C */
 extern void c4pros_mem_pixel(uint8_t color, uint16_t x, uint16_t y);   /* запись в 0xA000 planar */
+extern void c4pros_mem_hline(uint8_t color, uint16_t x, uint16_t y, uint16_t len);   /* быстрая горизонтальная линия */
+extern uint8_t c4pros_mem_read_byte(uint16_t offset, uint8_t plane);   /* 0xA000 planar, GC reg 4 = Read Map */
+extern void c4pros_mem_write_byte(uint16_t offset, uint8_t plane, uint8_t byte);   /* 0xA000 planar, SC reg 2 = Map Mask */
 extern void c4pros_mem_pixel_gc_restore(void);
+extern void c4pros_mem_sc_restore(void);   /* SC reg 2 = 0xF (все плоскости) после курсора */
 extern void c4pros_set_video_mode(uint8_t mode);   /* AH=0, AL=mode (напр. 0x12, 0x13) */
 
 extern void c4pros_cursor_set(uint8_t row, uint8_t col);
@@ -57,5 +61,18 @@ extern void c4pros_fs_save_dir(void);
 extern void c4pros_fs_restore_dir(void);
 
 extern int c4pros_fs_load_huge_file(const char *name, uint16_t load_offset, uint16_t load_segment);
+
+/* --- PS/2 мышь (порты 0x60/0x64), опционально --- */
+extern int c4pros_ps2_mouse_init(void);   /* 0=ок, -1=ошибка */
+extern int c4pros_ps2_mouse_byte_ready(void);
+extern int c4pros_ps2_mouse_poll(uint8_t *buttons, int16_t *dx, int16_t *dy);
+extern void c4pros_ps2_mouse_reset_packet_state(void);
+
+/* --- Мышь через INT 15h (Pointing Device BIOS), как в рабочем NASM-драйвере --- */
+extern int c4pros_mouse_init(void);   /* 0=ок, -1=нет мыши */
+extern void c4pros_mouse_enable(void);
+extern void c4pros_mouse_disable(void);
+extern int c4pros_mouse_poll(uint8_t *buttons, int16_t *dx, int16_t *dy);   /* 1=есть событие */
+extern int c4pros_mouse_returns_absolute(void);   /* 1 = в dx,dy приходит позиция (INT 33h), 0 = дельта (INT 15h) */
 
 #endif
